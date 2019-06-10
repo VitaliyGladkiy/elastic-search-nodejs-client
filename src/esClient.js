@@ -9,9 +9,11 @@ function createIndex (indexName) {
             index: indexName
         }, function (error, response, status) {
             if (error) {
-                console.error(error)
+                console.error(error);
+                return 0;
             } else {
-                console.log('Index created')
+                console.log('Index created');
+                return 1;
             }
         })
     );
