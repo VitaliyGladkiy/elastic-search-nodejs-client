@@ -3,20 +3,21 @@ const client = new elasticsearch.Client({
     hosts: ['http://localhost:9200']
 });
 
-function createIndex (indexName) {
-    return new Promise(
-        client.indices.create({
-            index: indexName
-        }, function (error, response, status) {
-            if (error) {
-                console.error(error);
-                return 0;
-            } else {
-                console.log('Index created');
-                return 1;
-            }
-        })
-    );
+function createIndex(indexName) {
+    return new Promise((resolve, reject) => {
+            client.indices.create({
+                index: indexName
+            }, function (error, response, status) {
+                if (error) {
+                    // console.error(error);
+                    reject(error)
+                } else {
+                    console.log('Index created');
+                    resolve(response)
+                }
+            })
+        }
+    )
 }
 
 function searchAllInIndex(indexname) {
@@ -28,13 +29,16 @@ function searchAllInIndex(indexname) {
         }
     };
 
-    return new Promise(x => client.search({
-        index: indexname, body: body})
-        .then(results => {
-            return x(results.hits.hits);
-        }).catch(error=>{
-            console.error(error);
-        }))
+    return new Promise((resolve, error) => {
+        client.search({
+            index: indexname, body: body})
+            .then(results => {
+                resolve(results.hits.hits);
+            }).catch(e => {
+            error(e);
+        })
+        }
+    )
 }
 
 function search(index_name, field_name, value) {
@@ -48,8 +52,6 @@ function search(index_name, field_name, value) {
             console.error(error);
         }))
 }
-
-
 
 function createBody(name, value) {
     return {
@@ -67,9 +69,9 @@ function ping() {
             requestTimeout: 500,
         }, function (error) {
             if (error){
-                return 'False'
+                reject()
             } else {
-                return 'OK'
+                resolve()
             }
         });
     });
@@ -83,13 +85,15 @@ function insertObjectToIndex(indexname, data) {
             body: data
         };
 
-    client.index(body, function (err, response) {
-        if (err) {
-            console.error("Failed Bulk operation", err)
-        } else {
-            console.log("Successfully imported")
-        }
-    });
+    return new Promise((resolve, error) => {
+        client.index(body, function (err, response) {
+            if (err) {
+                error("Failed Bulk operation", err)
+            } else {
+                resolve("Successfully imported")
+            }
+        });
+    })
 }
 
 module.exports = { searchAllInIndex,insertObjectToIndex, createIndex, ping, search };

@@ -11,16 +11,15 @@ router.get('/', function (req, res) {
 });
 
 router.get('/create-index/:name', async function (req, res) {
-    await es.createIndex(req.params.name).then(x => {
+    es.createIndex(req.params.name).then(x => {
         console.log('index created OK');
         res.status(200);
         res.send({status:"ok"});
     }).catch(error=>{
-        console.log('error while create index');
+        console.log('error while create index', error);
         res.status(500);
-        res.message({error:error.message});
-        send();
-    })
+        res.send({message: error.message});
+    });
 });
 
 router.get('/search_all_in_index/:index_name', function (req, res) {
@@ -53,7 +52,6 @@ router.get('/delete_index/:index_name', function (req, res) {
 });
 
 router.post('/insert/:index_name', jsonParser, function (req, res) {
-    console.log('catch');
     es.insertObjectToIndex(req.params.index_name, req.body)
         .then(x => {
             res.status(200);
@@ -74,17 +72,6 @@ router.get('/ping', async function (req, res, next) {
             res.status(500);
             res.send({error: error})
     });
-});
-
-router.get('/insert/city/:abr/:name', function (req, res) {
-    es.insert(req.params.abr, req.params.name)
-        .then(x => {
-            res.status(200);
-            res.send({response: 'OK'})
-        }).catch(error=>{
-            res.status(500);
-            res.send({error: error})
-    })
 });
 
 module.exports = router;
